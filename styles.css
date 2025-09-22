@@ -364,6 +364,10 @@ body {
     .central-flower {
         width: 100px;
         height: 100px;
+        /* Asegurar que sea clickeable en móvil */
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
     }
     
     .flower-center {
@@ -383,6 +387,17 @@ body {
     .petal-1, .petal-2, .petal-3, .petal-4, 
     .petal-5, .petal-6, .petal-7, .petal-8 {
         transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) translateY(-25px);
+    }
+    
+    /* Área de toque más grande para móvil */
+    .central-flower::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        right: -20px;
+        bottom: -20px;
+        z-index: -1;
     }
 }
 
@@ -424,6 +439,13 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     animation: centralFlowerPulse 3s ease-in-out infinite;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .central-flower:hover {
@@ -560,5 +582,17 @@ body {
     to {
         opacity: 0;
         transform: translateX(-50%) translateY(-20px) scale(0.8);
+    }
+}
+
+/* Animación para indicador de toque */
+@keyframes touchRipple {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
     }
 }

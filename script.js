@@ -358,46 +358,103 @@ setTimeout(() => {
 function initializeCentralFlower() {
     const centralFlower = document.getElementById('centralFlower');
     let isPressed = false;
+    let touchStartTime = 0;
+    let touchStartPos = { x: 0, y: 0 };
     
-    // Efecto de click/touch
-    centralFlower.addEventListener('click', function(e) {
-        e.preventDefault();
+    // Función para activar la explosión
+    function triggerExplosion() {
         if (!isPressed) {
             isPressed = true;
             createFlowerExplosion();
             
             // Efecto visual de pulsación
-            this.style.animation = 'none';
-            this.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            centralFlower.style.animation = 'none';
+            centralFlower.style.transform = 'translate(-50%, -50%) scale(0.8)';
             
             setTimeout(() => {
-                this.style.animation = 'centralFlowerPulse 3s ease-in-out infinite';
-                this.style.transform = 'translate(-50%, -50%) scale(1)';
+                centralFlower.style.animation = 'centralFlowerPulse 3s ease-in-out infinite';
+                centralFlower.style.transform = 'translate(-50%, -50%) scale(1)';
                 isPressed = false;
             }, 300);
         }
+    }
+    
+    // Evento de click para desktop
+    centralFlower.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        triggerExplosion();
     });
     
-    // Efecto hover para desktop
-    centralFlower.addEventListener('mouseenter', function() {
-        this.style.transform = 'translate(-50%, -50%) scale(1.15)';
-        createGoldenSparkles(this);
-    });
-    
-    centralFlower.addEventListener('mouseleave', function() {
-        this.style.transform = 'translate(-50%, -50%) scale(1)';
-    });
-    
-    // Efecto táctil para móvil
+    // Eventos táctiles optimizados para móvil
     centralFlower.addEventListener('touchstart', function(e) {
         e.preventDefault();
+        e.stopPropagation();
+        touchStartTime = Date.now();
+        touchStartPos.x = e.touches[0].clientX;
+        touchStartPos.y = e.touches[0].clientY;
+        
+        // Efecto visual inmediato
         this.style.transform = 'translate(-50%, -50%) scale(1.1)';
-    });
+        this.style.transition = 'transform 0.1s ease';
+        
+        // Crear indicador visual de toque
+        createTouchIndicator(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
     
     centralFlower.addEventListener('touchend', function(e) {
         e.preventDefault();
+        e.stopPropagation();
+        
+        const touchDuration = Date.now() - touchStartTime;
+        const touchEndPos = {
+            x: e.changedTouches[0].clientX,
+            y: e.changedTouches[0].clientY
+        };
+        
+        // Calcular distancia del toque
+        const distance = Math.sqrt(
+            Math.pow(touchEndPos.x - touchStartPos.x, 2) + 
+            Math.pow(touchEndPos.y - touchStartPos.y, 2)
+        );
+        
+        // Si el toque fue corto y no se movió mucho, activar explosión
+        if (touchDuration < 500 && distance < 50) {
+            triggerExplosion();
+        }
+        
+        // Restaurar tamaño normal
         this.style.transform = 'translate(-50%, -50%) scale(1)';
+        this.style.transition = 'transform 0.3s ease';
+    }, { passive: false });
+    
+    // Prevenir zoom en doble toque
+    centralFlower.addEventListener('touchend', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+    
+    // Efecto hover para desktop (solo si no es táctil)
+    let isTouchDevice = false;
+    centralFlower.addEventListener('touchstart', function() {
+        isTouchDevice = true;
     });
+    
+    if (!isTouchDevice) {
+        centralFlower.addEventListener('mouseenter', function() {
+            this.style.transform = 'translate(-50%, -50%) scale(1.15)';
+            createGoldenSparkles(this);
+        });
+        
+        centralFlower.addEventListener('mouseleave', function() {
+            this.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+    }
+    
+    // Agregar indicador visual de que es clickeable
+    centralFlower.style.cursor = 'pointer';
+    centralFlower.style.userSelect = 'none';
+    centralFlower.style.webkitUserSelect = 'none';
+    centralFlower.style.webkitTapHighlightColor = 'transparent';
 }
 
 // Crear explosión masiva de flores
@@ -506,6 +563,30 @@ function createConcentricWaves(centerX, centerY) {
             };
         }, ring * 300);
     }
+}
+
+// Crear indicador visual de toque
+function createTouchIndicator(x, y) {
+    const indicator = document.createElement('div');
+    indicator.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 60px;
+        height: 60px;
+        border: 3px solid rgba(255, 215, 0, 0.8);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1002;
+        transform: translate(-50%, -50%);
+        animation: touchRipple 0.6s ease-out;
+    `;
+    
+    document.body.appendChild(indicator);
+    
+    setTimeout(() => {
+        indicator.remove();
+    }, 600);
 }
 
 // Crear chispas doradas
