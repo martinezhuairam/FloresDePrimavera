@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFloatingFlowers();
     initializeScrollEffects();
     initializeCentralFlower();
+    initializeYulyPhoto();
 });
 
 // Crear partículas de fondo
@@ -670,6 +671,138 @@ function showSpecialMessage() {
     
     setTimeout(() => {
         notification.style.animation = 'specialMessageDisappear 0.5s ease-in forwards';
+        setTimeout(() => notification.remove(), 500);
+    }, 4000);
+}
+
+// Inicializar foto de Yuly
+function initializeYulyPhoto() {
+    const yulyPhoto = document.querySelector('.yuly-photo');
+    
+    if (yulyPhoto) {
+        // Efecto de click en la foto
+        yulyPhoto.addEventListener('click', function() {
+            createLoveExplosion(this);
+            showYulyMessage();
+        });
+        
+        // Efecto hover para desktop
+        yulyPhoto.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            createHeartRain();
+        });
+        
+        yulyPhoto.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+        
+        // Efecto táctil para móvil
+        yulyPhoto.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            this.style.transform = 'scale(1.05)';
+        });
+        
+        yulyPhoto.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            this.style.transform = 'scale(1)';
+            createLoveExplosion(this);
+            showYulyMessage();
+        });
+    }
+}
+
+// Crear explosión de amor para Yuly
+function createLoveExplosion(element) {
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Crear corazones especiales
+    const loveEmojis = ['💖', '💕', '💗', '💝', '💘', '💞', '💓', '💟'];
+    
+    for (let i = 0; i < 12; i++) {
+        const heart = document.createElement('div');
+        heart.innerHTML = loveEmojis[Math.floor(Math.random() * loveEmojis.length)];
+        heart.style.cssText = `
+            position: fixed;
+            left: ${centerX}px;
+            top: ${centerY}px;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+        `;
+        
+        document.body.appendChild(heart);
+        
+        // Animación de explosión de corazones
+        const angle = (i / 12) * Math.PI * 2;
+        const distance = 80 + Math.random() * 40;
+        const endX = centerX + Math.cos(angle) * distance;
+        const endY = centerY + Math.sin(angle) * distance;
+        
+        heart.animate([
+            { 
+                transform: 'translate(-50%, -50%) scale(0.5) rotate(0deg)',
+                opacity: 1
+            },
+            { 
+                transform: `translate(${endX - centerX - 15}px, ${endY - centerY - 15}px) scale(1.2) rotate(360deg)`,
+                opacity: 0.8
+            },
+            { 
+                transform: `translate(${endX - centerX}px, ${endY - centerY}px) scale(0.8) rotate(720deg)`,
+                opacity: 0
+            }
+        ], {
+            duration: 2000,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        }).onfinish = () => {
+            heart.remove();
+        };
+    }
+}
+
+// Mostrar mensaje especial para Yuly
+function showYulyMessage() {
+    const yulyMessages = [
+        "¡Eres la más hermosa! 💖",
+        "Mi amor por ti es infinito 💕",
+        "Eres mi sol y mi luna 🌙",
+        "Mi corazón late por ti 💗",
+        "Eres mi todo, mi Yuly 💝",
+        "Tu sonrisa ilumina mi mundo ✨",
+        "Eres perfecta como eres 💘",
+        "Mi amor eterno para ti 💞"
+    ];
+    
+    const message = yulyMessages[Math.floor(Math.random() * yulyMessages.length)];
+    
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e, #ffa8a8);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 30px;
+        box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        z-index: 1000;
+        font-family: 'Dancing Script', cursive;
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        animation: yulyMessageAppear 0.8s ease-out;
+        border: 3px solid #ffed4e;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'yulyMessageDisappear 0.5s ease-in forwards';
         setTimeout(() => notification.remove(), 500);
     }, 4000);
 }
